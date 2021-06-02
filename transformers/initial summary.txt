@@ -1,0 +1,7 @@
+      The problem is that we can’t currently predict well log data more 
+than a few feet away from the tool while drilling. Our problem is to 
+create a system that can predict well log data much further with much 
+less initial data or potentially no initial data. To do this we will use 
+a set of transformers for the prediction along with an accompanying neural 
+network to pick the best transformer for the current well. 
+Note: we might be able to use k-means clustering or something similar instead of a neural net.
