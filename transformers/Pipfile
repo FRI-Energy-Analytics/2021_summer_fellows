@@ -9,6 +9,10 @@ pandas = "*"
 numpy = "*"
 matplotlib = "*"
 lasio = "*"
+jupyterlab = "*"
+geopandas = "*"
+seaborn = "*"
+lxml = "*"
 
 [dev-packages]
 
