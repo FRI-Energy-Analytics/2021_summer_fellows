@@ -39,6 +39,9 @@ in this tutorial) can be easily adapted/composed.
 # of ``nn.TransformerEncoder`` model is sent to the final Linear
 # layer, which is followed by a log-Softmax function.
 #
+
+
+# path for error on my machine
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import math
@@ -166,7 +169,6 @@ val_data = data_process(val_iter)
 test_data = data_process(test_iter)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(str(torch.cuda.is_available()) + "\n\n\n\n")
 
 def batchify(data, bsz):
     # Divide the dataset into bsz parts.
