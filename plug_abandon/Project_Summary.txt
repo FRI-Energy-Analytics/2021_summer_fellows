@@ -1,0 +1,5 @@
+There are times when companies decide to abandon certain oil rigs, which is classified as orphaning it.
+This becomes a problem as the wells need to be dealt with properly, undergoing a process known as plugging
+and abandoning which can be costly. In this project I aim to develop a reinforcement learning algorithm that,
+when specified, can minimize financial, environmental, or time loss. It should be able to do so while
+accounting for changes in oil price and other subsequent changes in variables.
