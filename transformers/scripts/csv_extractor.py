@@ -1,12 +1,7 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import glob
 import lasio
 from tqdm import tqdm
-from textwrap import wrap  # for making pretty well names
-from multiprocessing import Pool, Queue
-from functools import partial
 
 def get_depth(well_log):
     if well_log is None:

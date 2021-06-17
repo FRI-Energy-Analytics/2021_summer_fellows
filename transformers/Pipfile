@@ -13,6 +13,9 @@ jupyterlab = "*"
 geopandas = "*"
 seaborn = "*"
 lxml = "*"
+tqdm = "*"
+darts = "*"
+torchtext = "*"
 
 [dev-packages]
 
