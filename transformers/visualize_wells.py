@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+
 def plot_well(file_name):
 
     cmap = mpl.cm.bone_r  # select our color map
@@ -25,9 +26,6 @@ def plot_well(file_name):
 
     for j in range(x.size - 1):
         plt.fill_betweenx(
-            [y[j], y[j + 1]],
-            [x[j], x[j + 1]],
-            x2=z.max(),
-            color=cmap(normalize(z[j]))
+            [y[j], y[j + 1]], [x[j], x[j + 1]], x2=z.max(), color=cmap(normalize(z[j]))
         )
     plt.show()
