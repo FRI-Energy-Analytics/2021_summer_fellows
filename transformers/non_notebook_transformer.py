@@ -44,16 +44,33 @@ in this tutorial) can be easily adapted/composed.
 # path for error on my machine
 import os
 
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+# Imports
 import math
+import time
+
+# Not used
+##import io
+
+from collections import Counter
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
+# Not used
+##import torch.nn.functional as F
+
+from torchtext.datasets import WikiText2
+from torchtext.data.utils import get_tokenizer
+from torchtext.vocab import Vocab
+
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 class TransformerModel(nn.Module):
+    """ Transormer Model Class
+    TODO add description
+    """
     def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
         super(TransformerModel, self).__init__()
         self.model_type = "Transformer"
@@ -66,7 +83,11 @@ class TransformerModel(nn.Module):
 
         self.init_weights()
 
-    def generate_square_subsequent_mask(self, sz):
+    @classmethod
+    def generate_square_subsequent_mask(cls, sz):
+        """ Generates Mask
+        TODO add description
+        """
         mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
         mask = (
             mask.float()
@@ -76,12 +97,18 @@ class TransformerModel(nn.Module):
         return mask
 
     def init_weights(self):
+        """ Initializes Transofmer Weights
+        TODO add description
+        """
         initrange = 0.1
         self.encoder.weight.data.uniform_(-initrange, initrange)
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
     def forward(self, src, src_mask):
+        """ Transformer forward function
+        TODO add description
+        """
         src = self.encoder(src) * math.sqrt(self.ninp)
         src = self.pos_encoder(src)
         output = self.transformer_encoder(src, src_mask)
@@ -99,6 +126,9 @@ class TransformerModel(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
+    """ Encoder class model
+    TODO add description
+    """
     def __init__(self, d_model, dropout=0.1, max_len=5000):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -114,6 +144,9 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("pe", pe)
 
     def forward(self, x):
+        """ PE forward function
+        TODO add description
+        """
         x = x + self.pe[: x.size(0), :]
         return self.dropout(x)
 
@@ -151,13 +184,6 @@ class PositionalEncoding(nn.Module):
 # efficient batch processing.
 #
 
-import io
-import torch
-from torchtext.datasets import WikiText2
-from torchtext.data.utils import get_tokenizer
-from collections import Counter
-from torchtext.vocab import Vocab
-
 train_iter = WikiText2(split="train")
 tokenizer = get_tokenizer("basic_english")
 counter = Counter()
@@ -167,6 +193,9 @@ vocab = Vocab(counter)
 
 
 def data_process(raw_text_iter):
+    """ Processes raw text into data
+    TODO describe
+    """
     data = [
         torch.tensor([vocab[token] for token in tokenizer(item)], dtype=torch.long)
         for item in raw_text_iter
@@ -183,6 +212,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def batchify(data, bsz):
+    """ Batches data
+    TODO describe
+    """
     # Divide the dataset into bsz parts.
     nbatch = data.size(0) // bsz
     # Trim off any extra elements that wouldn't cleanly fit (remainders).
@@ -223,6 +255,9 @@ bptt = 35
 
 
 def get_batch(source, i):
+    """ get batch
+    TODO describe
+    """
     seq_len = min(bptt, len(source) - 1 - i)
     data = source[i : i + seq_len]
     target = source[i + 1 : i + 1 + seq_len].reshape(-1)
@@ -267,8 +302,6 @@ model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(devi
 # function to scale all the gradient together to prevent exploding.
 #
 
-import time
-
 criterion = nn.CrossEntropyLoss()
 lr = 5.0  # learning rate
 optimizer = torch.optim.SGD(model.parameters(), lr=lr)
@@ -276,6 +309,9 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 
 
 def train():
+    """ Transformer Training
+    TODO describe
+    """
     model.train()  # Turn on the train mode
     total_loss = 0.0
     start_time = time.time()
@@ -314,6 +350,9 @@ def train():
 
 
 def evaluate(eval_model, data_source):
+    """ Evaluation Metric
+    TODO describe
+    """
     eval_model.eval()  # Turn on the evaluation mode
     total_loss = 0.0
     src_mask = model.generate_square_subsequent_mask(bptt).to(device)

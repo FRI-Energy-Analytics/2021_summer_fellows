@@ -1,10 +1,17 @@
-import pandas as pd
+""" CSV extractpr
+TODO describe
+"""
+
 import glob
+import pandas as pd
 import lasio
 from tqdm import tqdm
 
 
 def get_depth(well_log):
+    """ get well depth
+    TODO describe
+    """
     if well_log is None:
         return None
     if "DEPT" in well_log.keys():
@@ -15,6 +22,9 @@ def get_depth(well_log):
 
 
 def get_gamma(well_log):
+    """ get well gamma
+    TODO describe
+    """
     if well_log is None:
         return None
     if "GR" in well_log.keys():
@@ -26,13 +36,16 @@ def get_gamma(well_log):
     if "GAMMA:1" in well_log.keys():
         return well_log["GAMMA:1"]
     if "GR.GAPI" in well_log.keys():
-        print("yayyayay")
+        #print("yayyayay")
         return well_log["GR.GAPI"]
     print(well_log.keys())
     return None
 
 
 def get_well(well_log):
+    """ get well
+    TODO describe
+    """
     try:
         return well_log.well["WELL"]
     except:
@@ -40,6 +53,9 @@ def get_well(well_log):
 
 
 def get_county(well_log):
+    """ get well county
+    TODO describe
+    """
     if well_log is None:
         return "NA"
     if "CNTY" in well_log.well:
@@ -52,6 +68,9 @@ def get_county(well_log):
 
 
 def add_log(file):
+    """ add well log
+    TODO describe
+    """
     try:
         return lasio.read(file)
     except:
@@ -59,6 +78,9 @@ def add_log(file):
 
 
 def extract_all(well_log, uid) -> pd.DataFrame:
+    """ extract all data
+    TODO describe
+    """
     depth = get_depth(well_log)
     gamma = get_gamma(well_log)
     if depth is None:

@@ -1,15 +1,25 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+""" County info extractor
+TODO describe
+"""
 import glob
+from multiprocessing import Pool
+import pandas as pd
+import matplotlib.pyplot as plt
 import lasio
 from tqdm import tqdm
-from textwrap import wrap  # for making pretty well names
-from multiprocessing import Pool, Queue
-from functools import partial
 
+import geopandas as gpd
+
+# Unused
+##import numpy as np
+##from textwrap import wrap  # for making pretty well names
+##from functools import partial
+##from multiprocessing import Queue
 
 def get_well(well_log):
+    """ get well log
+    TODO describe
+    """
     try:
         return well_log.well["WELL"]
     except:
@@ -17,6 +27,9 @@ def get_well(well_log):
 
 
 def get_county(well_log):
+    """ get well log
+    TODO describe
+    """
     if "CNTY" in well_log.well:
         return well_log.well["CNTY"]
     if "CNTY." in well_log.well:
@@ -29,6 +42,9 @@ def get_county(well_log):
 
 
 def add_log(file):
+    """ Add well Log
+    TODO describe
+    """
     try:
         return lasio.read(file)
     except:
@@ -120,8 +136,6 @@ if __name__ == "__main__":
     plt.yticks(range(len(freq_df)), freq_df["County"])
     # Lets plot the frequency
     plt.barh(range(len(freq_df)), freq_df["Frequency"])
-
-    import geopandas as gpd
 
     kansas_map = gpd.read_file("kansas.zip")
 
