@@ -1,20 +1,35 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+""" County info extractor
+TODO describe
+"""
 import glob
+from multiprocessing import Pool
+import pandas as pd
+import matplotlib.pyplot as plt
 import lasio
 from tqdm import tqdm
-from textwrap import wrap  # for making pretty well names
-from multiprocessing import Pool, Queue
-from functools import partial
+
+import geopandas as gpd
+
+# Unused
+##import numpy as np
+##from textwrap import wrap  # for making pretty well names
+##from functools import partial
+##from multiprocessing import Queue
 
 def get_well(well_log):
+    """ get well log
+    TODO describe
+    """
     try:
         return well_log.well["WELL"]
     except:
         return well_log.well["WELL:1"]
 
+
 def get_county(well_log):
+    """ get well log
+    TODO describe
+    """
     if "CNTY" in well_log.well:
         return well_log.well["CNTY"]
     if "CNTY." in well_log.well:
@@ -25,13 +40,18 @@ def get_county(well_log):
         print(well_log.well["API"])
     return f"NA"
 
+
 def add_log(file):
+    """ Add well Log
+    TODO describe
+    """
     try:
         return lasio.read(file)
     except:
         return None
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     wells = []
     year = 2016
     counties = []
@@ -42,11 +62,11 @@ if __name__ == '__main__':
 
     pool = Pool()
     print(f"Queue 'em up")
-    well_logs = list(pool.imap(add_log, wells));
+    well_logs = list(pool.imap(add_log, wells))
     pool.close()
     pool.join()
 
-    well_logs = filter(lambda x: x is not None, well_logs) # Remove nulls
+    well_logs = filter(lambda x: x is not None, well_logs)  # Remove nulls
 
     for log in well_logs:
         counties.append(get_county(log))
@@ -56,7 +76,7 @@ if __name__ == '__main__':
     for i, county in enumerate(counties):
         if type(county) != type(""):
             counties[i] = county.value
-        
+
         counties[i] = counties[i].upper()
 
     # Extract all the counties into a dataframe
@@ -66,7 +86,7 @@ if __name__ == '__main__':
     # There were a bunch of errors and typos in this county data
     # Time to fix the typos
     corrections = {
-        "ANDERSON   SEC. 22   TWP. 20S   RGE. 20E" : "ANDERSON",
+        "ANDERSON   SEC. 22   TWP. 20S   RGE. 20E": "ANDERSON",
         "STATON": "STANTON",
         "KEARNEY": "KEARNY",
         "ELI WIRELINE": "NA",
@@ -78,23 +98,23 @@ if __name__ == '__main__':
         "SEDGWICH": "SEDGWICK",
         "SEDOWICK": "SEDGWICK",
         "SEDGEWICK": "SEDGWICK",
-        "LORRAINE": "ELLSWORTH", # Lorrained is a city in Ellsworth CO.
+        "LORRAINE": "ELLSWORTH",  # Lorrained is a city in Ellsworth CO.
         "HASKEL": "HASKELL",
         "DECTAUR": "DECATUR",
         "TRGO": "TREGO",
         "ELLS": "ELLIS",
         "NESS CO.": "NESS",
         "OSBOURNE": "OSBORNE",
-        '': "NA",
+        "": "NA",
         "HODGMAN": "HODGEMAN",
-        "USA" : "NA",
-        "KANSAS" : "NA",
-        "RUSSEL" : "RUSSELL",
-        "PRATT COUNTY" : "PRATT",
-        "WITCHITA" : "WICHITA",
-        "RUCH" : "RUSH",
-        "RAWLINGS" : "RAWLINS",
-        "RENO CO" : "RENO",
+        "USA": "NA",
+        "KANSAS": "NA",
+        "RUSSEL": "RUSSELL",
+        "PRATT COUNTY": "PRATT",
+        "WITCHITA": "WICHITA",
+        "RUCH": "RUSH",
+        "RAWLINGS": "RAWLINS",
+        "RENO CO": "RENO",
         "RENO CO.": "RENO",
     }
     # Apply colrrections
@@ -102,20 +122,21 @@ if __name__ == '__main__':
         final_df.loc[final_df["County"] == key] = value
 
     freq_count = final_df["County"].value_counts()
-    freq_df = pd.DataFrame({"County": freq_count.keys(), "Frequency": freq_count.values})
+    freq_df = pd.DataFrame(
+        {"County": freq_count.keys(), "Frequency": freq_count.values}
+    )
     freq_df = freq_df.sort_values(by="Frequency", ascending=False)
     freq_df = freq_df.reset_index(drop=True)
-    print(freq_df.head()) # Lets see the Frequencies in order
+    print(freq_df.head())  # Lets see the Frequencies in order
 
-    freq_df["Percent"] = freq_df['Frequency'] /freq_df["Frequency"].sum() * 100
+    freq_df["Percent"] = freq_df["Frequency"] / freq_df["Frequency"].sum() * 100
     print(f"Number of NA's {freq_df[freq_df['County'] == 'NA']}")
 
-    fig = plt.figure(figsize=(6,17))
+    fig = plt.figure(figsize=(6, 17))
     plt.yticks(range(len(freq_df)), freq_df["County"])
     # Lets plot the frequency
     plt.barh(range(len(freq_df)), freq_df["Frequency"])
 
-    import geopandas as gpd
     kansas_map = gpd.read_file("kansas.zip")
 
     # To merge the county data with the kansas map we must use fips numbers
@@ -124,23 +145,24 @@ if __name__ == '__main__':
 
     for index, county in freq_df["County"].iteritems():
         name = county.capitalize() + " County"
-        if name == "Mcpherson County": # Only county with speical capitalization
+        if name == "Mcpherson County":  # Only county with speical capitalization
             name = "McPherson County"
         q1 = fpis[fpis["name"] == name]
         try:
-            freq_df.loc[index, "COUNTYFP"] = str(q1[q1["state"] == "KS"]["fips"].iloc[0])[2:]
+            freq_df.loc[index, "COUNTYFP"] = str(
+                q1[q1["state"] == "KS"]["fips"].iloc[0]
+            )[2:]
         except Exception as e:
             # Print out any thing that is not marked as existing
             print("None - " + county)
 
     density_map = kansas_map
-    density_map = density_map.merge(freq_df, on = "COUNTYFP", how = "left")
+    density_map = density_map.merge(freq_df, on="COUNTYFP", how="left")
 
     density_map = density_map.fillna(0)
     plt.show()
-    density_map.plot(column="Frequency", cmap = 'inferno', legend=True)
+    density_map.plot(column="Frequency", cmap="inferno", legend=True)
     plt.title(f"Kansas Well County Distribution - {year}")
     plt.savefig(f"maps/kansas_map {year}.png")
     plt.show()
     plt.close(fig)
-
