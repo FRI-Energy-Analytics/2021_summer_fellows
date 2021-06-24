@@ -12,6 +12,7 @@ import torch
 from torch import nn
 from torchtext.data.utils import get_tokenizer  # type:ignore
 from torchtext.vocab import Vocab  # type:ignore
+from utils import Config
 
 
 class PositionalEncoding(nn.Module):
@@ -88,20 +89,13 @@ class TransformerModel(nn.Module):
         output = self.decoder(output)
         return output
 
-
-device = torch.device("cpu")
-
-bptt = 10
-shift = 1
-
-
 def get_batch(source, i):
     """
     Gets a batch shifted over by shift length
     """
-    seq_len = min(bptt, len(source) - shift - i)
+    seq_len = min(batch_size, len(source) - cnf.forecast_window - i)
     data = source[i : i + seq_len]
-    target = source[i + shift : i + shift + seq_len].reshape(-1)
+    target = source[i + cnf.forecast_window : i + cnf.forecast_window + seq_len].reshape(-1)
     return data, target
 
 
@@ -115,7 +109,7 @@ def batchify(data, bsz):
     data = data.narrow(0, 0, nbatch * bsz)
     # Evenly divide the data across the bsz batxches.
     data = data.view(bsz, -1)
-    return data.to(device)
+    return data.to(cnf.device)
 
 
 def data_process(raw_text_iter):
@@ -168,16 +162,16 @@ def train():
     model.train()  # Turn on the train mode
     total_loss = 0.0
     start_time = time.time()
-    src_mask = model.generate_square_subsequent_mask(bptt).to(device)
+    src_mask = model.generate_square_subsequent_mask(cnf.input_length).to(cnf.device)
     log_interval = 200
-    for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
+    for batch, i in enumerate(range(0, train_data.size(0) - 1, cnf.input_length)):
         # Fetch Data
         data, targets = get_batch(train_data, i)
         optimizer.zero_grad()
 
         # Genearte attention mask
-        if data.size(0) != bptt:
-            src_mask = model.generate_square_subsequent_mask(data.size(0)).to(device)
+        if data.size(0) != cnf.input_length:
+            src_mask = model.generate_square_subsequent_mask(data.size(0)).to(cnf.device)
 
         output = model(data, src_mask)
 
@@ -216,13 +210,13 @@ def evaluate(eval_model, data_source):
     """
     eval_model.eval()  # Turn on the evaluation mode
     total_loss = 0.0
-    src_mask = model.generate_square_subsequent_mask(bptt).to(device)
+    src_mask = model.generate_square_subsequent_mask(cnf.input_length).to(cnf.device)
     with torch.no_grad():
-        for i in range(0, data_source.size(0) - 1, bptt):
+        for i in range(0, data_source.size(0) - 1, cnf.input_length):
             data, targets = get_batch(data_source, i)
-            if data.size(0) != bptt:
+            if data.size(0) != cnf.input_length:
                 src_mask = model.generate_square_subsequent_mask(data.size(0)).to(
-                    device
+                    cnf.device
                 )
             output = eval_model(data, src_mask)
             output_flat = output.view(-1, ntokens)
@@ -231,6 +225,9 @@ def evaluate(eval_model, data_source):
 
 
 if __name__ == "__main__":
+
+    # TODO: make this config file be through command line
+    cnf = Config.load("options/config.toml")
 
     wells = pd.read_csv("export_csv/2018.csv", index_col=[1, 0])
 
@@ -257,37 +254,33 @@ if __name__ == "__main__":
     val_data = data_process(x_val.to_numpy(dtype="int64"))
     test_data = data_process(x_test.to_numpy(dtype="int64"))
 
-    batch_size = 10
-    eval_batch_size = 10
-    train_data = batchify(train_data, batch_size)
-    val_data = batchify(val_data, eval_batch_size)
-    test_data = batchify(test_data, eval_batch_size)
+    train_data = batchify(train_data, cnf.batch_size)
+    val_data = batchify(val_data, cnf.eval_batch_size)
+    test_data = batchify(test_data, cnf.eval_batch_size)
 
     best_val_loss = float("inf")
-    epochs = 20  # The number of epochs
     best_model = None
 
     ntokens = len(vocab.stoi)  # the size of vocabulary
 
     # Define our TransformerModel
-    emsize = 200  # embedding dimension
-    nhid = (
-        200  # the dimension of the feedforward network model in nn.TransformerEncoder
-    )
-    nlayers = 2  # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-    nhead = 4  # the number of heads in the multiheadattention models
-    dropout = 0.2  # the dropout value
-    model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(device)
+    model = TransformerModel(ntokens, cnf.model.d_model, cnf.model.nhead, cnf.model.nhid, cnf.model.nlayers, cnf.model.dropout).to(cnf.device)
 
-    criterion = nn.CrossEntropyLoss()
-    lr = 5.0  # learning rate
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    criterion = nn.MSELoss()
+    if cnf.loss == "CrossEntropy":
+        criterion = nn.CrossEntropyLoss()
+
+    lr = cnf.lr
+
+    if cnf.optimizer == "SGD":
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, 1.0, gamma=0.95  # type:ignore
     )
 
     # Training loop
-    for epoch in range(1, epochs + 1):
+    for epoch in range(1, cnf.epochs + 1):
         epoch_start_time = time.time()
         train()
         val_loss = evaluate(model, val_data)
@@ -309,13 +302,13 @@ if __name__ == "__main__":
     # Combine output predicted data into full_output
     data_source = test_data
     full_output = []
-    src_mask = torch.ones(bptt, bptt)
+    src_mask = torch.ones(cnf.input_length, cnf.input_length)
     with torch.no_grad():
-        for i in range(0, data_source.size(0), bptt):
+        for i in range(0, data_source.size(0), cnf.input_length):
             data, targets = get_batch(data_source, i)
-            if data.size(0) != bptt:
+            if data.size(0) != cnf.input_length:
                 src_mask = best_model.generate_square_subsequent_mask(data.size(0)).to(
-                    device
+                    cnf.device
                 )
             output = model(data, src_mask)
             full_output.append(output)

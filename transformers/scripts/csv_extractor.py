@@ -6,6 +6,7 @@ import glob
 import pandas as pd
 import lasio
 from tqdm import tqdm
+from multiprocessing.pool import Pool
 
 
 def get_depth(well_log):
@@ -29,6 +30,10 @@ def get_gamma(well_log):
         return None
     if "GR" in well_log.keys():
         return well_log["GR"]
+    if "GR." in well_log.keys():
+        return well_log["GR."]
+    if "GRX" in well_log.keys():
+        return well_log["GRX"]
     if "GRGC" in well_log.keys():
         return well_log["GRGC"]
     if "GAMMA" in well_log.keys():
@@ -36,8 +41,9 @@ def get_gamma(well_log):
     if "GAMMA:1" in well_log.keys():
         return well_log["GAMMA:1"]
     if "GR.GAPI" in well_log.keys():
-        #print("yayyayay")
         return well_log["GR.GAPI"]
+    if "GREV" in well_log.keys():
+        return well_log["GR."]
     print(well_log.keys())
     return None
 
@@ -83,8 +89,8 @@ def extract_all(well_log, uid) -> pd.DataFrame:
     """
     depth = get_depth(well_log)
     gamma = get_gamma(well_log)
-    if depth is None:
-        return pd.DataFrame()  # If no time series is avaliable, we can't use it
+    if depth is None or gamma is None:
+        return pd.DataFrame() # If no time series or gamma is avaliable, we can't use it
     index_df = pd.DataFrame(dict(depth=depth, well_id=uid))
     index = pd.MultiIndex.from_frame(index_df)
     county = get_county(well_log)
@@ -94,7 +100,7 @@ def extract_all(well_log, uid) -> pd.DataFrame:
 
 if __name__ == "__main__":
     wells = []
-    year = 2018
+    year = 2015
     counties = []
     well_logs = []
 

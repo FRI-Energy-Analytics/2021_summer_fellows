@@ -4,18 +4,19 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-dash = "*"
 pandas = "*"
 numpy = "*"
 matplotlib = "*"
-lasio = "*"
 jupyterlab = "*"
 geopandas = "*"
 seaborn = "*"
 lxml = "*"
 tqdm = "*"
-darts = "*"
 torchtext = "*"
+sklearn = "*"
+transformers = "*"
+multimodal-transformers = "*"
+toml = "*"
 
 [dev-packages]
 
