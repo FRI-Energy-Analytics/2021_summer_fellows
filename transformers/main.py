@@ -16,7 +16,7 @@ from models.transformer import TransformerModel
 from scripts.train_transformer_v1 import (
     batchify,
     conv,
-    convert_outpupt_to_tensor,
+    convert_output_to_tensor,
     data_process,
     evaluate,
     generate_square_subsequent_mask,
