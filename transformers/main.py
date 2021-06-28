@@ -130,7 +130,7 @@ if __name__ == "__main__":
             output = model(data, src_mask)
             full_output.append(output)
     full_output = torch.cat(full_output)
-    full_output = convert_outpupt_to_tensor(full_output, vocab)
+    full_output = convert_output_to_tensor(full_output, vocab)
 
     print(f"Test Loss: {test_loss} Best Validation Loss: {best_val_loss}")
 
