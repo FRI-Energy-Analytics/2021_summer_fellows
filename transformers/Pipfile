@@ -15,10 +15,13 @@ tqdm = "*"
 torchtext = "*"
 sklearn = "*"
 transformers = "*"
-multimodal-transformers = "*"
+# multimodal-transformers = "*"
 toml = "*"
+lasio = "*"
+welly = "*"
+wellpathpy = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.8"
