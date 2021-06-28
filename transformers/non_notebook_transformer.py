@@ -223,7 +223,6 @@ def batchify(data, bsz):
     data = data.view(bsz, -1).t().contiguous()
     return data.to(device)
 
-
 batch_size = 20
 eval_batch_size = 10
 train_data = batchify(train_data, batch_size)
@@ -348,7 +347,6 @@ def train():
             total_loss = 0
             start_time = time.time()
 
-
 def evaluate(eval_model, data_source):
     """ Evaluation Metric
     TODO describe
@@ -365,6 +363,10 @@ def evaluate(eval_model, data_source):
                 )
             output = eval_model(data, src_mask)
             output_flat = output.view(-1, ntokens)
+            if plot:
+                print("evalutaion time")
+                plt.plot(len(output_flat), output_flat)
+            plt.show()
             total_loss += len(data) * criterion(output_flat, targets).item()
     return total_loss / (len(data_source) - 1)
 
