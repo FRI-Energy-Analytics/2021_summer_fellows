@@ -15,7 +15,7 @@ class Config:
     @classmethod
     def load_toml(cls, file_name):
         """
-        Import the confiuation using a toml file at the specified location
+        Import the configuration using a toml file at the specified location
         Example configuration:
         ```toml
             [model]
