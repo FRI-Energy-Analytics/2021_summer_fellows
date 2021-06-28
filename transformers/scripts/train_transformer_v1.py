@@ -8,6 +8,7 @@ import time
 import torch
 from torch import nn
 
+
 def generate_square_subsequent_mask(sz):
     """
     Generate attention mask using triu (triangle) attention
@@ -150,5 +151,3 @@ def evaluate(eval_model, criterion, ntokens, data_source, cnf):
             output_flat = output.view(-1, ntokens)
             total_loss += len(data) * criterion(output_flat, targets).item()
     return total_loss / (len(data_source) - 1)
-
-
