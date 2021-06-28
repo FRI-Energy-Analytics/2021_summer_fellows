@@ -1,6 +1,7 @@
 """
 Contains the Config class to setup the system
 """
+import json
 import toml
 
 
@@ -12,7 +13,7 @@ class Config:
     and model hyperparmeters
     """
     @classmethod
-    def load(cls, file_name):
+    def load_toml(cls, file_name):
         """
         Import the confiuation using a toml file at the specified location
         Example configuration:
@@ -44,6 +45,41 @@ class Config:
         """
         with open(file_name) as f:
             data = toml.loads(f.read())
+            return cls(**data)
+
+    @classmethod
+    def load_json(cls, file_name):
+        """
+        Import the confiuation using a toml file at the specified location
+        Example configuration:
+        ```json
+        {
+          "data": {
+            "year": 2018
+          },
+          "model": {
+            "d_model": 200,
+            "dropout": 0.2,
+            "nhead": 4,
+            "nhidden": 200,
+            "nlayers": 2
+          },
+          "train": {
+            "batch_size": 10,
+            "device": "cpu",
+            "epochs": 20,
+            "eval_batch_size": 10,
+            "forecast_window": 1,
+            "input_length": 10,
+            "loss": "CrossEntropy",
+            "lr": 5.0,
+            "optimizer": "SGD"
+          }
+        }
+        ```
+        """
+        with open(file_name) as f:
+            data = json.loads(f.read())
             return cls(**data)
 
     def __init__(self, **opts):
