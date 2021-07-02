@@ -4,17 +4,24 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-dash = "*"
 pandas = "*"
 numpy = "*"
 matplotlib = "*"
-lasio = "*"
 jupyterlab = "*"
 geopandas = "*"
 seaborn = "*"
 lxml = "*"
+tqdm = "*"
+torchtext = "*"
+sklearn = "*"
+transformers = "*"
+# multimodal-transformers = "*"
+toml = "*"
+lasio = "*"
+welly = "*"
+wellpathpy = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.8"

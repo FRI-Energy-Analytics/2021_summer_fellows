@@ -1,0 +1,5 @@
+[MESSAGES CONTROL]
+# E0401 Import packages
+# C0103 UPPER_CASE naming
+# R0903 Few public methods
+disable=E0401, C0103, R0903, no-member, invalid-name
