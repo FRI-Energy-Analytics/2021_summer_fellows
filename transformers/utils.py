@@ -12,6 +12,7 @@ class Config:
     dataset
     and model hyperparmeters
     """
+
     @classmethod
     def load_toml(cls, file_name):
         """
@@ -105,6 +106,7 @@ class GeneralConfig:
     It is still best practice to put the name of each along with
     a default value
     """
+
     def __init__(self, **opts):
         for name, option in opts.items():
             setattr(self, name, option)

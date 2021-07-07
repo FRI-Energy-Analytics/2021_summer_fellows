@@ -90,7 +90,9 @@ def extract_all(well_log, uid) -> pd.DataFrame:
     depth = get_depth(well_log)
     gamma = get_gamma(well_log)
     if depth is None or gamma is None:
-        return pd.DataFrame() # If no time series or gamma is avaliable, we can't use it
+        return (
+            pd.DataFrame()
+        )  # If no time series or gamma is avaliable, we can't use it
     index_df = pd.DataFrame(dict(depth=depth, well_id=uid))
     index = pd.MultiIndex.from_frame(index_df)
     county = get_county(well_log)

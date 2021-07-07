@@ -67,10 +67,12 @@ from torchtext.vocab import Vocab
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+
 class TransformerModel(nn.Module):
     """ Transormer Model Class
     TODO add description
     """
+
     def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
         super(TransformerModel, self).__init__()
         self.model_type = "Transformer"
@@ -129,6 +131,7 @@ class PositionalEncoding(nn.Module):
     """ Encoder class model
     TODO add description
     """
+
     def __init__(self, d_model, dropout=0.1, max_len=5000):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -222,6 +225,7 @@ def batchify(data, bsz):
     # Evenly divide the data across the bsz batches.
     data = data.view(bsz, -1).t().contiguous()
     return data.to(device)
+
 
 batch_size = 20
 eval_batch_size = 10
@@ -346,6 +350,7 @@ def train():
             )
             total_loss = 0
             start_time = time.time()
+
 
 def evaluate(eval_model, data_source):
     """ Evaluation Metric
