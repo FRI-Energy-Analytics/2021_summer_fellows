@@ -244,7 +244,144 @@ CREATE TABLE wellbores (
 	w3x_viol VARCHAR,
 	h15_status_code VARCHAR,
 	orig_completion_dt VARCHAR
-) 
+)
+
+-- More wellbore info
+CREATE TABLE wellbores2 (
+	api_county VARCHAR,
+	api_unique VARCHAR,
+	district VARCHAR,
+	county_no VARCHAR,
+	orig_completion_cc VARCHAR,
+	orig_completion VARCHAR,
+	api_depth VARCHAR,
+	valid_fluid_level VARCHAR,
+	cert_revoked_date VARCHAR,
+	cert_denial_date VARCHAR,
+	denial_reason VARCHAR,
+	error_api_assign_code VARCHAR,
+	refer_correct_api_num VARCHAR,
+	dummy_api_num VARCHAR,
+	date_dummy_replaced VARCHAR,
+	newest_drl_pmt_num VARCHAR,
+	cancel_expire_code VARCHAR,
+	except_13A VARCHAR,
+	fresh_water_flag VARCHAR,
+	plug_flag VARCHAR,
+	previous_api_num VARCHAR,
+	completion_data_ind VARCHAR,
+	hist_date_source_flag VARCHAR,
+	ex14b2_count VARCHAR,
+	designation_hb_1975_flag VARCHAR,
+	designation_effective_dt VARCHAR,
+	designation_revised_dt VARCHAR,
+	designation_letter_dt VARCHAR,
+	cert_effect_dt VARCHAR,
+	water_land_code VARCHAR,
+	bonded_depth VARCHAR,
+	override_est_plug_cost VARCHAR,
+	shutin_dt VARCHAR,
+	override_bonded_depth VARCHAR,
+	well_subject_14b2_flag VARCHAR,
+	well_pend_removal_14b2_flag VARCHAR,
+	orphan_well_hold_flag VARCHAR,
+	w3x_well_flag VARCHAR
+)
+
+-- More operator information
+CREATE TABLE p5_orgs (
+	operator_no VARCHAR,
+	operator_name VARCHAR,
+	refiling_req_flag VARCHAR,
+	p5_status_code VARCHAR,
+	hold_mail_code VARCHAR,
+	renewal_letter_code VARCHAR,
+	organization_code VARCHAR,
+	organ_other_comment VARCHAR,
+	gatherer_code VARCHAR,
+	org_address_line1 VARCHAR,
+	org_address_line2 VARCHAR,
+	org_city VARCHAR,
+	org_state VARCHAR,
+	org_zip VARCHAR,
+	org_zip_suffix VARCHAR,
+	location_address_line1 VARCHAR,
+	location_address_line2 VARCHAR,
+	location_city VARCHAR,
+	location_state VARCHAR,
+	location_zip VARCHAR,
+	location_zip_suffix VARCHAR,
+	date_built VARCHAR,
+	date_inactive VARCHAR,
+	org_phone_num VARCHAR,
+	refile_notice_month VARCHAR,
+	refile_letter_date VARCHAR,
+	refile_notice_date VARCHAR,
+	refile_received_date VARCHAR,
+	last_p5_received_date VARCHAR,
+	other_org_no VARCHAR,
+	filing_problem_date VARCHAR,
+	filing_problem_ltr_code VARCHAR,
+	telephone_verify_flag VARCHAR,
+	op_num_multi_used_flag VARCHAR,
+	oil_gatherer_status VARCHAR,
+	gas_gatherer_status VARCHAR,
+	tax_cert VARCHAR,
+	emergency_phone_num VARCHAR
+)
+
+-- Field data
+CREATE TABLE field_data (
+	field_no VARCHAR,
+	field_name VARCHAR,
+	district_no VARCHAR,
+	district_name VARCHAR, 
+	field_class VARCHAR,
+	field_h2s_flag VARCHAR,
+	field_manual_rev_flag VARCHAR,
+	wildcat_flag VARCHAR,
+	o_derived_rule_type_code VARCHAR,
+	g_derived_rule_type_code VARCHAR,
+	o_rescind_dt VARCHAR,
+	g_rescind_dt VARCHAR,
+	o_salt_dome_flag VARCHAR,
+	g_salt_dome_flag VARCHAR,
+	o_offshore_code VARCHAR,
+	g_offshore_code VARCHAR,
+	o_dont_permit VARCHAR,
+	g_dont_permit VARCHAR,
+	o_noa_man_rev_rule VARCHAR,
+	g_noa_man_rev_rule VARCHAR,
+	o_county_no VARCHAR,
+	g_county_no VARCHAR,
+	o_discovery_dt VARCHAR,
+	g_discovery_dt VARCHAR,
+	o_sched_remarks VARCHAR,
+	g_sched_remarks VARCHAR,
+	o_comments VARCHAR,
+	g_comments VARCHAR
+)
+
+-- Texas Geologic Units (2005)
+CREATE TABLE tx_geo_units (
+	state VARCHAR,
+	orig_lab VARCHAR,
+	map_sym1 VARCHAR,
+	map_sym2 VARCHAR,
+	unit_link VARCHAR,
+	prov_no VARCHAR,
+	province VARCHAR,
+	unit_name VARCHAR,
+	unit_age VARCHAR,
+	unit_desc VARCHAR,
+	strat_unit VARCHAR,
+	unit_com VARCHAR,
+	map_ref VARCHAR,
+	rocktype1 VARCHAR,
+	rocktype2 VARCHAR,
+	rocktype3 VARCHAR,
+	unit_ref VARCHAR
+)
 
 -- Import data. Use \copy if access/permission is denied.
 COPY orphans FROM 'orphansnew.txt' (DELIMITER('\t'));
@@ -257,6 +394,8 @@ COPY leases FROM 'lease_info.csv' DELIMITER ',' CSV HEADER;
 COPY county_prod FROM 'county_prod.csv' DELIMITER ',' CSV HEADER;
 COPY operator_prod FROM 'operator_prod.csv' DELIMITER ',' CSV HEADER;
 COPY district_prod FROM 'district_prod.csv' DELIMITER ',' CSV HEADER;
+COPY wellbores FROM 'wellbores.csv' DELIMITER ',' CSV HEADER;
+
 
 -- Delete columns with only null values.
 ALTER TABLE orphans DROP COLUMN stat;
@@ -594,3 +733,167 @@ JOIN wellbores ON (orphans.lease_name = wellbores.lease_name AND orphans.lease_n
 -- To view active wells:
 SELECT * FROM wellbores WHERE well_type_name = 'PRODUCING' AND wb_shutin_dt IS NULL AND well_shutin_dt = '0';
 
+-- Get inactive wells (not orphans)
+SELECT inactive_wells.api, inactive_wells.og_code, inactive_wells.district_code AS district, inactive_wells.county_name, wellbores.county_no,
+inactive_wells.operator_name, inactive_wells.operator_no, inactive_wells.lease_name, inactive_wells.lease_no, inactive_wells.well_no,
+inactive_wells.field_name, inactive_wells.field_no, inactive_wells.oil_unit_no, inactive_wells.water_land_code, wellbores.multi_comp_flag,
+inactive_wells.api_depth, inactive_wells.shutin_dt, inactive_wells.cost_calc, inactive_wells.well_plugged, inactive_wells.compliance_due_date,
+wellbores.wb_shutin_dt, wellbores.well_shutin_dt, wellbores.wb_14b2_flag,wellbores.well_type_name, wellbores.plug_date, wellbores.plug_lease_name,
+wellbores.plug_operator_name, wellbores.recent_permit, wellbores.recent_permit_lease_name, wellbores.recent_permit_operator_no, wellbores.on_schedule,
+wellbores.og_wellbore_ewa_id, wellbores.w2g1_filed_date, wellbores.w2g1_date, wellbores.completion_date, wellbores.w3_file_date, wellbores.p5_renewal_month,
+wellbores.p5_renewal_year, wellbores.p5_org_status, wellbores.current_inactive_yrs, wellbores.current_inactive_months, wellbores.wl_14b2_ext_status,
+wellbores.wl_14b2_mech_integ, wellbores.wl_14b2_plg_ord_sf, wellbores.wl_14b2_pollution, wellbores.wl_14b2_fldops_hold, wellbores.wl_14b2_h15_prob,
+wellbores.wl_14b2_h15_delq, wellbores.wl_14b2_oper_delq, wellbores.wl_14b2_dist_sfp, wellbores.wl_14b2_dist_sf_clnup, wellbores.wl_14b2_dist_st_plg,
+wellbores.wl_14b2_good_faith, wellbores.wl_14b2_well_other, wellbores.surf_eqp_viol, wellbores.w3x_viol, wellbores.h15_status_code FROM inactive_wells
+LEFT JOIN orphans ON (inactive_wells.lease_name = orphans.lease_name AND inactive_wells.lease_no = orphans.lease_no AND inactive_wells.well_no = orphans.well_no)
+JOIN wellbores ON (inactive_wells.api = wellbores.api AND inactive_wells.lease_no = wellbores.lease_no AND inactive_wells.well_no = wellbores.well_no)
+WHERE orphans.lease_name IS NULL AND orphans.lease_no IS NULL and orphans.well_no IS NULL;
+
+-- What well types are the inactive wells? Seems to be a mix of types
+SELECT DISTINCT well_type_name FROM inactive_wells
+JOIN wellbores
+ON (inactive_wells.api = wellbores.api AND inactive_wells.lease_no = wellbores.lease_no
+	AND inactive_wells.well_no = wellbores.well_no);
+
+-- Update wellbores api numbers
+ALTER TABLE wellbores2 ADD COLUMN api VARCHAR;
+UPDATE wellbores2 SET api = api_county || api_unique;
+ALTER TABLE wellbores2 DROP COLUMN api_county, DROP COLUMN api_unique;
+
+-- Check active wells with available original completion dates
+SELECT wellbores2.api, wellbores.district, wellbores.county_no, wellbores.lease_name, wellbores.field_name, wellbores.well_type_name,
+wellbores.operator_name, wellbores2.orig_completion, wellbores.well_shutin_dt
+FROM wellbores2 JOIN wellbores ON (wellbores2.api = wellbores.api)
+WHERE wellbores2.orig_completion <> '00000000' AND wellbores2.orig_completion <> '19840112' AND wellbores.well_type_name = 'PRODUCING'
+AND (wellbores.well_shutin_dt = '0' OR wellbores.well_shutin_dt IS NULL);
+
+-- Check inactive wells with available original completion dates
+SELECT * FROM inactive_wells
+WHERE orig_completion IS NOT NULL AND orig_completion <>'1984-01-12'::date;
+
+-- Check orphans with available original completion dates
+SELECT * FROM orphans
+JOIN inactive_wells ON (orphans.lease_name = inactive_wells.lease_name AND orphans.lease_no = inactive_wells.lease_no AND orphans.well_no = inactive_wells.well_no)
+JOIN wellbores2 ON (orphans.api = wellbores2.api)
+WHERE inactive_wells.orig_completion IS NOT NULL AND inactive_wells.orig_completion <> '1984-01-12'::date
+AND wellbores2.orig_completion IS NOT NULL AND wellbores2.orig_completion <> '19840112' AND wellbores2.orig_completion <> '00000000';
+
+-- Setting null values across the datasets
+ 
+-- P5 Organizations Data
+UPDATE p5_orgs
+SET date_built = NULL 
+WHERE date_built = '00000000';
+UPDATE p5_orgs 
+SET organ_other_comment = NULL
+WHERE organ_other_comment = '                    ';
+UPDATE p5_orgs 
+SET gatherer_code = NULL
+WHERE gatherer_code = '     ';
+UPDATE p5_orgs 
+SET renewal_letter_code = NULL
+WHERE renewal_letter_code = ' ';
+UPDATE p5_orgs 
+SET org_address_line1 = NULL
+WHERE org_address_line1 LIKE ',%';
+UPDATE p5_orgs
+SET org_address_line2 = NULL 
+WHERE org_address_line2 = '                       -       '
+OR org_address_line2 = '                         -     '
+OR org_address_line2 = '                           -   '
+OR org_address_line2 = '                            -  '
+OR org_address_line2 = '                             - '
+OR org_address_line2 = '                               ';
+UPDATE p5_orgs
+SET org_city = NULL
+WHERE org_city = '             ';
+UPDATE p5_orgs
+SET org_state = NULL
+WHERE org_state = '  ';
+UPDATE p5_orgs
+SET location_address_line1 = NULL
+WHERE location_address_line1 = '                               ';
+UPDATE p5_orgs
+SET location_address_line2 = NULL
+WHERE location_address_line2 = '                       -       '
+OR location_address_line2 = '                         -     '
+OR location_address_line2 = '                           -   '
+OR location_address_line2 = '                            -  '
+OR location_address_line2 = '                             - '
+OR location_address_line2 = '                               ';
+UPDATE p5_orgs
+SET location_address_line2 = NULL
+WHERE location_address_line2 = '+                              '
+UPDATE p5_orgs
+SET location_city = NULL
+WHERE location_city = '             ';
+UPDATE p5_orgs
+SET location_state = NULL
+WHERE location_state = '  ';
+UPDATE p5_orgs
+SET date_inactive = NULL
+WHERE date_inactive = '00000000';
+UPDATE p5_orgs
+SET org_phone_num = NULL
+WHERE org_phone_num = '0000000000';
+UPDATE p5_orgs
+SET refile_notice_month = NULL
+WHERE refile_notice_month = '00';
+UPDATE p5_orgs
+SET refile_letter_date = NULL
+WHERE refile_letter_date = '00000000';
+UPDATE p5_orgs
+SET refile_notice_date = NULL
+WHERE refile_notice_date = '00000000';
+UPDATE p5_orgs
+SET refile_received_date = NULL
+WHERE refile_received_date = '00000000';
+UPDATE p5_orgs
+SET last_p5_received_date = NULL
+WHERE last_p5_received_date = '19000000';
+UPDATE p5_orgs
+SET other_org_no = NULL
+WHERE other_org_no = '000000';
+UPDATE p5_orgs
+SET filing_problem_date = NULL
+WHERE filing_problem_date = '00000000'
+OR filing_problem_date = '        ';
+UPDATE p5_orgs
+SET filing_problem_ltr_code = NULL
+WHERE filing_problem_ltr_code = '   ';
+UPDATE p5_orgs
+SET op_num_multi_used_flag = 'N'
+WHERE op_num_multi_used_flag = ' ';
+UPDATE p5_orgs
+SET oil_gatherer_status = 'N'
+WHERE oil_gatherer_status = ' ';
+UPDATE p5_orgs
+SET gas_gatherer_status = 'N'
+WHERE gas_gatherer_status = ' ';
+UPDATE p5_orgs
+SET tax_cert = 'NR' -- NR stands for Not Requested here
+WHERE tax_cert = ' ';
+UPDATE p5_orgs
+SET emergency_phone_num = NULL
+WHERE emergency_phone_num = '0000000000';
+
+-- Wellbores2 (second wellbores dataset)
+UPDATE wellbores2
+SET api = NULL
+WHERE api = 'x'
+OR api = 'UNKNOWN'
+OR api = 'Unknown'
+OR api = 'unknown'
+OR api = 'UNK'
+OR api = 'unk'
+OR api = 'UKN'
+OR api = 'N/AQ'
+OR api = 'na';
+
+UPDATE wellbores2 SET orig_completion = NULL WHERE orig_completion = '00000000';
+UPDATE wellbores2 SET orig_completion = TO_DATE(orig_completion, 'YYYYMMDD');
+ALTER TABLE wellbores2 ALTER COLUMN orig_completion TYPE date USING orig_completion::date;
+-- Weird dates
+UPDATE wellbores2 SET orig_completion = '19430930' WHERE orig_completion = '19430931';
+UPDATE wellbores2 SET orig_completion = '19770430' WHERE orig_completion = '19770431';
+UPDATE wellbores2 SET orig_completion = '19550228' WHERE orig_completion = '19550229';
