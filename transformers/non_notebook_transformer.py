@@ -67,10 +67,12 @@ from torchtext.vocab import Vocab
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+
 class TransformerModel(nn.Module):
     """ Transormer Model Class
     TODO add description
     """
+
     def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
         super(TransformerModel, self).__init__()
         self.model_type = "Transformer"
@@ -129,6 +131,7 @@ class PositionalEncoding(nn.Module):
     """ Encoder class model
     TODO add description
     """
+
     def __init__(self, d_model, dropout=0.1, max_len=5000):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -365,6 +368,10 @@ def evaluate(eval_model, data_source):
                 )
             output = eval_model(data, src_mask)
             output_flat = output.view(-1, ntokens)
+            if plot:
+                print("evalutaion time")
+                plt.plot(len(output_flat), output_flat)
+            plt.show()
             total_loss += len(data) * criterion(output_flat, targets).item()
     return total_loss / (len(data_source) - 1)
 
