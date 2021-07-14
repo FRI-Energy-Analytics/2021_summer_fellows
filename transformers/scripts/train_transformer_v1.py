@@ -65,7 +65,7 @@ def conv(raw_output, vocab):
     return torch.tensor([int(vocab.get_itos()[x]) for x in raw_output.view(-1)])
 
 
-def convert_outpupt_to_tensor(output, vocab):
+def convert_output_to_tensor(output, vocab):
     """
     Converts the latent dimension into data again the opposite of data_process
     This version also accounts for the probability outputs using torch.argmax()
