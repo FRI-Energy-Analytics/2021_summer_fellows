@@ -1,0 +1,22 @@
+[model]
+d_model = 200
+nhidden = 200
+nlayers = 2
+nhead = 4
+dropout = 0.2
+
+[data]
+year = 2016
+train_split = 0.7
+
+[train]
+batch_size = 10
+eval_batch_size = 10
+forecast_window = 1
+input_length = 40
+epochs = 20
+device = "cpu"
+optimizer = "Nadam"
+loss = "MSE"
+lr = 0.0005 # Learning reate
+exp_dir = "experiments/second"

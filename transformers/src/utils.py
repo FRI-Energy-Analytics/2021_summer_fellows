@@ -119,6 +119,7 @@ class DataConfig(GeneralConfig):
     """
 
     year: int
+    train_split: float
 
 
 class TrainConfig(GeneralConfig):

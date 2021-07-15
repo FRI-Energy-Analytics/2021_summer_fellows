@@ -3,6 +3,7 @@ Runs through training and plotting of the loss function for the current running 
 """
 from collections import Counter, OrderedDict
 import math
+from models.transformer_v2 import WellDecepticon
 import time
 
 import matplotlib.pyplot as plt
@@ -16,6 +17,7 @@ from keras import metrics
 from keras import losses
 from keras import layers
 import keras
+import numpy as np
 
 import toml
 import os
@@ -31,8 +33,6 @@ def train_step(model, optimizer, x_train, y_train):
     optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
     train_loss(loss)
-
-    pass
 
 def test_step(model, x_test, y_test):
     predictions = model(x_test)
@@ -66,56 +66,82 @@ if __name__ == "__main__":
     train_data = [data[i] for i in range(train_size)]
     test_data =  [data[i] for i in range(train_size, train_size + test_size -1)]
 
-    x_train = [ d[0] for d in train_data]
-    y_train = [ d[1] for d in train_data]
+    x_train = np.array([ d[0] for d in train_data])
+    y_train = np.array([ d[1] for d in train_data])
+
+    print("X", x_train.shape)
+    print("Y", y_train.shape)
+
+
+    assert not np.any(np.isnan(x_train))
+    assert not np.any(np.isnan(y_train))
 
     x_test =  [ d[0] for d in test_data]
     y_test =  [ d[1] for d in test_data]
 
+    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+    test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
+
+    # (x_train, y_train), (x_test, y_test) = tf.keras.datasets.boston_housing.load_data(
+    #     path="boston_housing.npz", test_split=0.5, seed=10
+    # )
+
+    # train_dataset = tf.keras.preprocessing.timeseries_dataset_from_array(
+    #     x_train, y_train, cnf.input_length, #batch_size = 1
+    # )
+
+    # test_dataset = tf.keras.preprocessing.timeseries_dataset_from_array(
+    #     x_test, y_test, cnf.input_length, #batch_size = 1
+    # )
+        
     # Define our TransformerModel
-    model = keras.Sequential([
-        layers.Dense(units=2, activation="relu"),
-        layers.Dense(units=10, activation="relu"),
-        layers.Dense(units=10, activation="relu"),
-        layers.Dense(units=1, activation="relu"),
-    ])
+    model = WellDecepticon(cnf.input_length, num_layers=1)
 
     # Loss function 
 
-    loss_object = None
+    loss = None
     if cnf.loss == "MSE":
-        loss_object = losses.MeanSquaredError()
+        loss = losses.MeanSquaredError()
     if cnf.loss == "CrossEntropy":
-        loss_object = losses.BinaryCrossentropy()
+        loss = losses.BinaryCrossentropy()
 
     lr = cnf.lr
-
-    # Loss Metrics
-    test_loss = metrics.Mean()
-    train_loss = metrics.Mean()
 
     optimizer = None
     if cnf.optimizer == "SGD":
         optimizer = optim.SGD(learning_rate=lr)
     if cnf.optimizer == "Adam":
         optimizer = optim.Adam(learning_rate=lr)
+    if cnf.optimizer == "Nadam":
+        optimizer = optim.Nadam(learning_rate=lr)
 
     assert optimizer
-    assert train_loss
-    assert test_loss
+    assert loss
 
-    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-    test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
 
-    train_log_dir = f"{cnf.exp_dir}/logs/"
-    test_log_dir  = f"{cnf.exp_dir}/logs/"
+    log_dir = f"{cnf.exp_dir}/logs/"
 
-    train_summary_writer = tf.summary.create_file_writer(train_log_dir)
-    test_summary_writer  = tf.summary.create_file_writer(test_log_dir)
+    train_summary_writer = tf.summary.create_file_writer(log_dir)
+    test_summary_writer  = tf.summary.create_file_writer(log_dir)
+
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
     # scheduler = torch.optim.lr_scheduler.StepLR(
     #     optimizer, 1.0, gamma=0.95  # type:ignore
     # )
+    model.compile(
+        optimizer=optimizer,
+        loss=loss
+    )
+
+    history = model.fit(
+        train_dataset.repeat(),
+        epochs=cnf.epochs,
+        steps_per_epoch=1000,
+        validation_data=test_dataset.repeat(),
+        validation_steps=1000,
+        callbacks=[tensorboard_callback]
+    )
 
     # # Training loop
     # for epoch in range(1, cnf.epochs + 1):
@@ -134,26 +160,27 @@ if __name__ == "__main__":
     #         best_val_loss = val_loss
     #         best_model = model
 
-    for epoch in range(cnf.epochs):
-        for (x_train, y_train) in train_dataset:
-            train_step(model, optimizer, x_train, y_train)
-        with train_summary_writer.as_default():
-            tf.summary.scalar('loss', train_loss.result(), step=epoch)
-            # tf.summary.scalar('accuracy', train_accuracy.result(), step=epoch)
 
-        for (x_test, y_test) in test_dataset:
-            test_step(model, x_test, y_test)
-        with test_summary_writer.as_default():
-            tf.summary.scalar('loss', test_loss.result(), step=epoch)
-            # tf.summary.scalar('accuracy', test_accuracy.result(), step=epoch)
+    # for epoch in range(cnf.epochs):
+    #     for (x_train, y_train) in train_dataset:
+    #         train_step(model, optimizer, x_train, y_train)
+    #     with train_summary_writer.as_default():
+    #         tf.summary.scalar('loss', train_loss.result(), step=epoch)
+    #         # tf.summary.scalar('accuracy', train_accuracy.result(), step=epoch)
+
+    #     for (x_test, y_test) in test_dataset:
+    #         test_step(model, x_test, y_test)
+    #     with test_summary_writer.as_default():
+    #         tf.summary.scalar('loss', test_loss.result(), step=epoch)
+    #         # tf.summary.scalar('accuracy', test_accuracy.result(), step=epoch)
       
-        template = 'Epoch {}, Loss: {}, Test Loss: {}'
-        print (template.format(epoch+1,
-                             train_loss.result(), 
-                             # train_accuracy.result()*100,
-                             test_loss.result(), 
-                             # test_accuracy.result()*100,
-                             ))
+    #     template = 'Epoch {}, Loss: {}, Test Loss: {}'
+    #     print (template.format(epoch+1,
+    #                          train_loss.result(), 
+    #                          # train_accuracy.result()*100,
+    #                          test_loss.result(), 
+    #                          # test_accuracy.result()*100,
+    #                          ))
 
     # # Export results into dataframe (slices are used due to size differences)
     # results = pd.DataFrame(

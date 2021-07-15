@@ -16,13 +16,21 @@ class WellLogDataset:
         self.S = cnf.forecast_window
         self.year = cnf.data.year
 
+        self.shift = 0
+
     def __len__(self):
         return len(self.wells.groupby(by=["well_id"])) #type:ignore
 
     def __getitem__(self, index):
-        well = self.wells.loc[int(str(index) + str(self.year))] #type:ignore
-        start = np.random.randint(0, len(well) - self.T - self.S) # Pick a random starting location
-        # start = 0
+        while True:
+            try:
+                well = self.wells.loc[int(str(index + self.shift) + str(self.year))] #type:ignore
+                break
+            except:
+                self.shift += 1
+                pass
+        # start = np.random.randint(0, len(well) - self.T - self.S) # Pick a random starting location
+        start = 0
 
         well_id = str(well[start:start+1].index.values.item())# type:ignore
 
@@ -38,12 +46,15 @@ class WellLogDataset:
             # "Density Corr",
             # "Caliper"
         ]
-
+        
         _input = np.array(well[input_values][start : start + self.T].values)
-        target = np.array(well[["Gamma"]][start+self.T: start + self.T + self.S].values)
+        target = np.array(well[input_values][start+ self.S: start + self.T + self.S].values)
 
         _input[:,0] = np.squeeze(np.expand_dims(_input[:,0], -1))
+
+        _input = _input.reshape(-1)
         target[:,0] = np.squeeze(np.expand_dims(target[:,0], -1))
+        target = target.reshape(-1)
 
         return _input, target
 
