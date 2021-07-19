@@ -4,6 +4,7 @@ Runs through training and plotting of the loss function for the current running 
 from collections import Counter, OrderedDict
 import math
 from models.transformer_v2 import WellDecepticon
+from models.transformer_v2 import WellDecepticonLayer
 import time
 
 import matplotlib.pyplot as plt
@@ -13,10 +14,10 @@ import toml
 
 import tensorflow as tf
 from tensorflow import optimizers as optim
-from keras import metrics
-from keras import losses
-from keras import layers
-import keras
+#from keras import metrics
+#from keras import losses
+#from keras import layers
+#import keras
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -67,6 +68,10 @@ if __name__ == "__main__":
 
     train_data = [data[i] for i in range(train_size)]
     test_data =  [data[i] for i in range(train_size, train_size + test_size -1)]
+    #print(train_size, "train_size\n\n\n\n\n\n")
+    #train_data = [data[i] for i in range(100)]
+    #test_data =  [data[i] for i in range(100, 200)]
+    #print("test\n\n\n\n\n\n")
 
     x_train = np.array([ d[0] for d in train_data])
     y_train = np.array([ d[1] for d in train_data])
@@ -97,15 +102,16 @@ if __name__ == "__main__":
     # )
         
     # Define our TransformerModel
-    model = WellDecepticon(cnf.input_length, num_layers=1)
+    #model = WellDecepticon(cnf.input_length, num_layers=2)
+    model = WellDecepticonLayer(cnf.input_length, initializer=tf.keras.initializers.RandomNormal())
 
     # Loss function 
 
-    loss = None
+    loss = cnf.loss
     if cnf.loss == "MSE":
-        loss = losses.MeanSquaredError()
+        loss = tf.keras.losses.MeanSquaredError()
     if cnf.loss == "CrossEntropy":
-        loss = losses.BinaryCrossentropy()
+        loss = tf.keras.losses.BinaryCrossentropy()
 
     lr = cnf.lr
 
@@ -141,7 +147,7 @@ if __name__ == "__main__":
         epochs=cnf.epochs,
         steps_per_epoch=1000,
         validation_data=test_dataset.repeat(),
-        validation_steps=1000,
+        validation_steps=10,
         callbacks=[tensorboard_callback]
     )
     
