@@ -22,13 +22,7 @@ class WellLogDataset:
         return len(self.wells.groupby(by=["well_id"])) #type:ignore
 
     def __getitem__(self, index):
-        while True:
-            try:
-                well = self.wells.loc[int(str(index + self.shift) + str(self.year))] #type:ignore
-                break
-            except:
-                self.shift += 1
-                pass
+        well = self.wells.loc[int(str(index + self.shift) + str(self.year))] #type:ignore
         # start = np.random.randint(0, len(well) - self.T - self.S) # Pick a random starting location
         start = 0
 

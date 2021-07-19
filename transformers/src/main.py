@@ -19,6 +19,8 @@ from keras import layers
 import keras
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 import toml
 import os
 
@@ -142,6 +144,25 @@ if __name__ == "__main__":
         validation_steps=1000,
         callbacks=[tensorboard_callback]
     )
+    
+    test_x, test_y = data[0]  # Grab example to validate
+    depth = data.wells.loc[int(str(0) + str(cnf.data.year))]["Depth"].values
+    eval_y = model(test_x)
+
+    depth_input = depth[:cnf.input_length]
+    depth_output = depth[cnf.forecast_window:cnf.forecast_window + cnf.input_length]
+
+    plt.plot(test_x, depth_input, label="Input") # Input
+
+    plt.plot(test_y, depth_output, label="Target") # Target
+
+    plt.plot(eval_y, depth_output, label="Output") # Target
+
+    plt.legend()
+    plt.gca().invert_yaxis()
+    plt.show()
+
+
 
     # # Training loop
     # for epoch in range(1, cnf.epochs + 1):
