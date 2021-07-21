@@ -1,7 +1,7 @@
 [model]
 d_model = 200
 nhidden = 200
-nlayers = 2
+nlayers = 10
 nhead = 4
 dropout = 0.2
 
@@ -12,11 +12,11 @@ train_split = 0.7
 [train]
 batch_size = 10
 eval_batch_size = 10
-forecast_window = 1
-input_length = 40
-epochs = 20
+forecast_window = 2
+input_length = 30
+epochs = 10
 device = "cpu"
 optimizer = "Nadam"
 loss = "MSE"
-lr = 0.0005 # Learning reate
+lr = 0.0005
 exp_dir = "experiments/second"
