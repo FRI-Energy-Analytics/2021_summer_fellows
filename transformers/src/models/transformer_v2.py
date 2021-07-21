@@ -9,7 +9,7 @@ class WellDecepticon(tf.keras.Model):
       initializer = tf.keras.initializers.RandomNormal()
     layers = []
     for _ in range(num_layers):
-      layers.append(WellDecepticonLayer(num_features=num_features, initializer=initializer))
+      layers.append(WellDecepticonLayer(num_features=num_features, output_size=num_features, initializer=initializer))
     self.network = keras.Sequential(layers)
 
   def call(self, inputs):
@@ -18,7 +18,7 @@ class WellDecepticon(tf.keras.Model):
 
 class WellDecepticonLayer(tf.keras.Model):
 
-  def __init__(self, num_features, initializer=None):
+  def __init__(self, num_features, output_size, initializer=None):
     super().__init__()
     activation_input = tf.keras.layers.ReLU()
     #self.dropout = tf.keras.layers.Dropout(.2)
@@ -36,7 +36,7 @@ class WellDecepticonLayer(tf.keras.Model):
     self.ff4 = keras.layers.Dense(units=num_features, activation=activation_input, kernel_initializer=initializer)
     self.ff5 = keras.layers.Dense(units=num_features, activation=activation_input, kernel_initializer=initializer)
     self.ff6 = keras.layers.Dense(units=num_features, activation=activation_input, kernel_initializer=initializer)
-    self.o   = keras.layers.Dense(units=1, activation=activation_input, kernel_initializer=initializer)
+    self.o   = keras.layers.Dense(units=output_size, activation=activation_input, kernel_initializer=initializer)
 
   def call(self, inputs):
     #tf.print(tf.shape(inputs))

@@ -22,17 +22,11 @@ class WellLogDataset:
         return len(self.wells.groupby(by=["well_id"])) #type:ignore
 
     def __getitem__(self, index):
-        while True:
-            try:
-                well = self.wells.loc[int(str(index + self.shift) + str(self.year))] #type:ignore
-                break
-            except:
-                self.shift += 1
-                pass
+        well = self.wells.loc[int(str(index + self.shift) + str(self.year))] #type:ignore
         # start = np.random.randint(0, len(well) - self.T - self.S) # Pick a random starting location
         start = 0
 
-        well_id = str(well[start:start+1].index.values.item())# type:ignore
+        # well_id = str(well[start:start+1].index.values.item())# type:ignore
 
         # index_in = np.array([i for i in range(start, start+self.T)])
         # index_tar = np.array([i for i in range(start + self.T, start + self.T + self.S)])# type:ignore
@@ -49,6 +43,7 @@ class WellLogDataset:
         
         _input = np.array(well[input_values][start : start + self.T].values)
         target = np.array(well[input_values][start+ self.S: start + self.T + self.S].values)
+        # target = np.array(well[input_values][start+ self.T: start + self.T + self.S].values)
 
         _input[:,0] = np.squeeze(np.expand_dims(_input[:,0], -1))
 

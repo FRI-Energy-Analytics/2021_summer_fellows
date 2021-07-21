@@ -14,33 +14,16 @@ import toml
 
 import tensorflow as tf
 from tensorflow import optimizers as optim
-#from keras import metrics
-#from keras import losses
-#from keras import layers
-#import keras
 import numpy as np
+from tqdm import tqdm
+
+import matplotlib.pyplot as plt
 
 import toml
 import os
 
 from dataloader import WellLogDataset
 from utils import Config
-
-def train_step(model, optimizer, x_train, y_train):
-    with tf.GradientTape() as tape:
-        predictions = model(x_train, training=True)
-        loss = loss_object(y_train, predictions)
-    grads = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(grads, model.trainable_variables))
-
-    train_loss(loss)
-
-def test_step(model, x_test, y_test):
-    predictions = model(x_test)
-    loss = loss_object(y_test, predictions)
-
-    test_loss(loss)
-
 
 if __name__ == "__main__":
 
@@ -101,7 +84,7 @@ if __name__ == "__main__":
         
     # Define our TransformerModel
     #model = WellDecepticon(cnf.input_length, num_layers=2)
-    model = WellDecepticonLayer(cnf.input_length, initializer=tf.keras.initializers.RandomNormal())
+    model = WellDecepticonLayer(cnf.input_length, output_size=cnf.forecast_window, initializer=tf.keras.initializers.RandomNormal())
 
     # Loss function 
 
@@ -127,9 +110,6 @@ if __name__ == "__main__":
 
     log_dir = f"{cnf.exp_dir}/logs/"
 
-    train_summary_writer = tf.summary.create_file_writer(log_dir)
-    test_summary_writer  = tf.summary.create_file_writer(log_dir)
-
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
     # scheduler = torch.optim.lr_scheduler.StepLR(
@@ -145,77 +125,45 @@ if __name__ == "__main__":
         epochs=cnf.epochs,
         steps_per_epoch=1000,
         validation_data=test_dataset.repeat(),
-        validation_steps=10,
+        validation_steps=1000,
         callbacks=[tensorboard_callback]
     )
 
-    # # Training loop
-    # for epoch in range(1, cnf.epochs + 1):
-    #     epoch_start_time = time.time()
-    #     train(model, optimizer, criterion, ntokens, train_data, cnf)
-    #     val_loss = evaluate(model, criterion, ntokens, val_data, cnf)
-    #     print("-" * 89)
-    #     print(
-    #         "| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | "
-    #         "valid ppl {:8.2f}".format(
-    #             epoch, (time.time() - epoch_start_time), val_loss, math.exp(val_loss)
-    #         )
-    #     )
-    #     print("-" * 89)
-    #     if val_loss < best_val_loss:
-    #         best_val_loss = val_loss
-    #         best_model = model
+    # Plot full well
+    id = 0
+    start = 0
+    well = data.wells.loc[int(str(id) + str(cnf.data.year))]
+    depth = well["Depth"].values
+    gamma = well["Gamma"].values
+    _input = gamma[start : start + cnf.input_length]
+    _input = _input.reshape(-1)
+    well_length = len(depth) - (len(depth) % (cnf.input_length + cnf.forecast_window))
+    full_output = gamma[start:start + cnf.input_length]
+    for i in tqdm(range(len(depth) - cnf.input_length)):
+        eval_y = model(np.expand_dims(_input, -1))
+        _input = np.append(_input[1::], tf.reduce_sum(eval_y, 1).numpy()[-cnf.forecast_window])
+        full_output = np.append(full_output, tf.reduce_sum(eval_y).numpy())
+        start += cnf.forecast_window
+    plt.plot(full_output, depth, label="Output", color="red")
+    plt.plot(gamma,       depth, label="Target",  color="blue")
+    plt.show()
 
+        
+    # Plot Individual Wells
+    ids = range(len(data))
+    for id in ids:
+        test_x, test_y = data[id]  # Grab example to validate
+        depth = data.wells.loc[int(str(id) + str(cnf.data.year))]["Depth"].values
 
-    # for epoch in range(cnf.epochs):
-    #     for (x_train, y_train) in train_dataset:
-    #         train_step(model, optimizer, x_train, y_train)
-    #     with train_summary_writer.as_default():
-    #         tf.summary.scalar('loss', train_loss.result(), step=epoch)
-    #         # tf.summary.scalar('accuracy', train_accuracy.result(), step=epoch)
+        eval_y = tf.reduce_sum(model(np.expand_dims(test_x, -1)), 1)
 
-    #     for (x_test, y_test) in test_dataset:
-    #         test_step(model, x_test, y_test)
-    #     with test_summary_writer.as_default():
-    #         tf.summary.scalar('loss', test_loss.result(), step=epoch)
-    #         # tf.summary.scalar('accuracy', test_accuracy.result(), step=epoch)
-      
-    #     template = 'Epoch {}, Loss: {}, Test Loss: {}'
-    #     print (template.format(epoch+1,
-    #                          train_loss.result(), 
-    #                          # train_accuracy.result()*100,
-    #                          test_loss.result(), 
-    #                          # test_accuracy.result()*100,
-    #                          ))
+        depth_input = depth[:cnf.input_length]
+        depth_output = depth[cnf.forecast_window:cnf.input_length + cnf.forecast_window]
 
-    # # Export results into dataframe (slices are used due to size differences)
-    # results = pd.DataFrame(
-    #     {
-    #         "Output": [t.item() for t in full_output.view(-1)],
-    #         "Input": conv(test_data.view(-1), vocab)[105:],
-    #     },
-    #     index=pd.Index(name="depth", data=well[1250:3899:5].index.values[107:]),
-    # )
+        plt.plot(test_y, depth_output, label="Target", color="orange") # Target
+        plt.plot(eval_y, depth_output, label="Output", color="red") # Output
 
-    # # Lets plot the results to see the final output
-    # fig = plt.figure(figsize=(8, 10))
-    # x = well["gamma"].values
-
-    # ax = plt.gca()
-    # ax.plot(results["Output"], results.index.values, label="Prediction", color="red")
-    # ax.plot(
-    #     well[:1000:5]["gamma"], well[:1000:5].index.values, label="Train", color="gray"
-    # )
-    # ax.plot(
-    #     well[1000:1250:5]["gamma"],
-    #     well[1000:1250:5].index.values,
-    #     label="Validation",
-    #     color="yellow",
-    # )
-    # ax.plot(
-    #     well[1250::5]["gamma"], well[1250::5].index.values, label="Target", color="blue"
-    # )
-    # ax.legend()
-    # ax.invert_yaxis()
-    # plt.savefig(f"results_{cnf.data.year}.png")
-    # plt.show()
+        plt.plot(test_x, depth_input, label="Input", color="blue") # Input
+        plt.legend()
+        plt.gca().invert_yaxis()
+        plt.show()
