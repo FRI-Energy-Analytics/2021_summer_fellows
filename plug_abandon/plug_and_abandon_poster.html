@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Plug and Abandon — Plugging abandoned wells optimally</title>
+    <link rel="stylesheet" href="poster.css">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1">
+    <!-- Based on a poster template from https://github.com/cpitclaudel/academic-poster-template -->
+
+          <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+          <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet">
+    
+    <style type="text/css">
+  html { font-size: 1.15rem }
+</style>
+  </head>
+
+  <body vocab="http://schema.org/" typeof="ScholarlyArticle">
+    <header role="banner">
+      <aside>
+          <a href="https://github.com/FRI-Energy-Analytics/2021_summer_fellows"><img src="EA_logo.jpg" alt="Energy Analytics logo"></a>
+      </aside>
+      <div>
+        <h1 property="headline">Plug and Abandon</h1>
+                  <h2 property="alternativeHeadline">Plugging abandoned wells optimally</h2>
+                <address>
+              <a property="author">John Breedis<sup>1</sup></a>
+  <a property="author">Jesse R. Pisel<sup>2</sup></a>
+  <a property="author">Michael J. Pyrcz<sup>3,4</sup></a>
+<br />  <sup>1</sup><a property="sourceOrganization">College of Natural Science, UT Austin</a>
+  <sup>2</sup><a property="sourceOrganization">Paul M. Rady School of Computer Science and Engineering, CU Boulder</a>
+  <sup>3</sup><a property="sourceOrganization">Cockrell School of Engineering, UT Austin</a>
+  <sup>4</sup><a property="sourceOrganization">Jackson School of Geosciences, UT Austin</a>
+        </address>
+        <span class="publication-info">
+                      <span property="publisher">Unpublished</span>,
+            <time pubdate property="datePublished" datetime="2021-07-23">July 23 2021</time>
+                  </span>
+      </div>
+      <aside>
+          <a href="https://cns.utexas.edu/"><img style="background: white" src="ut_logo.png" alt="UT Logo"></a>
+      </aside>
+    </header>
+
+    <main property="articleBody">
+        <article property="abstract">
+        <header><h3>Executive Summary</h3></header>
+
+    <p>The state of Texas has thousands of orphaned oil wells that need to be plugged up.
+    This project aims to optimize this process by minimizing the distance travelled visiting the orphaned wells.</p>
+	
+    <p> Using road data from the Texas Railroad Commission (RRC), I created an environment for a reinforcement learner algorithm to work with.
+    I trained a <i>Deep Q Learner</i> (DQN) to minimize the total distance travelled within a single county.
+    I then applied the algorithm to other environments to see how it would generalized. </p>
+	
+    <p> During this project, I learned about shapefiles, reinforcement learning, modularization, and how to work with big data. </p>
+    
+	<p> Those who wish to continue this project should investigate ways to incorporate the well plug rate into the environment and learner in order to account for other financial costs related to plugging these wells.
+    In addition, it may be worthwhile to develop a learner that can minimize the environmental risk of leaving certain wells open. </p>
+
+  </article>
+
+  <article>
+    <header><h3>Problem</h3></header>
+    <p>Many oil companies have not touched their wells in years, leaving them practically abandoned. This leaves the state of Texas with thousands of wells that need to be plugged.
+    It would be useful to develop a system that can determine the optimal order of plugging wells.
+    The purpose of this project is to train a Machine Learning algorithm that can consistently identify this optimal path.</p>
+	
+  </article>
+
+  <article>
+    <header><h3>Approach</h3></header>
+
+    <p> One major cost related to plugging wells that we can control is the travel cost across the state. Minimizing distance travelled will help minimize both financial cost and time.
+    Therefore, I started by implementing the basis for an environment, using NetworkX to translate the Texas RRC road shapefiles into usable graphs.
+    I created my first environment off of the county known as Atascosa. This environment would contain: </p>
+	<ul>
+	  <li> The roads of the region.</li>
+	  <li> Clusters of wells within a 1 mile radius.</li>
+	</ul>
+	 
+	<p>Once the environment was set, it was time to develop the learner that would traverse this environment and find the optimal path.
+  Since I would need to generalize each state the learner appeared in, I decided to use a form of <i>Deep Q Learning</i> (DQN).
+  This model would break down a state-action pair into numerical components, then run it through a Neural Network which would return the respective Q-value: the higher the value, the better the action.</p>
+
+  <figure>
+    <img src="https://cdn.analyticsvidhya.com/wp-content/uploads/2019/04/Screenshot-2019-04-16-at-5.46.01-PM.png" width="200" height="200" alt="A visual of a DQN network compared to standard Q-learning.">
+
+    <figcaption>DQN Network (<i>Source: <a href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.analyticsvidhya.com%2Fblog%2F2019%2F04%2Fintroduction-deep-q-learning-python%2F&psig=AOvVaw0TomXftg7NfUGJeIePYpUo&ust=1627103397634000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCOCjudi2-PECFQAAAAAdAAAAABAK">Google</a></i>)</figcaption>
+  </figure>
+
+  <p>The DQN model has 6 inputs (features), has 12 nodes in a hidden layer, with 1 output. The first activation function is a leaky-ReLU, and the final activation function is a sigmoid.
+  Given the current cluster (state) and a following cluster (action), the features given to the network were as follows:</p>
+
+  <ol> 
+	<li> Distance between the two clusters. </li>
+	<li> Norm-dot-product of the previous action and current action (angle of deviation from current direction). </li>
+    <li> Norm-dot-product of the current action and the path to the average coordinate of remaining clusters. </li>
+    <li> Distance to the average coordinate of remaining clusters. </li>
+    <li> Percentage of clusters visited (out of total number of clusters in the county). </li>
+    <li> A percentage measuring how the action compares in distance to the other remaining actions. </li>
+  </ol>
+
+  <p> The training process of the DQN network involved collecting a random batch of clusters and iterating over it, whilst comparing its action to the optimal path.
+  If the batch was small enough, one can run a brute-force pather that returns the total path with the smallest travelled distance.
+  Upon taking an action, the network would update with an MSE loss of the difference between the Q value and 1 if it chose the optimal action, -1 otherwise. </p>
+
+  <p> Once both of these components were functional, I decided to apply them on the entire state of Texas. To speed up the process,
+  I would train one DQN model on the connections between the counties, while I had another trained within the counties. That way, when the outer pather visited a county,
+  the inner pather would iterate over the clusters of wells within the county. Once finished, the outer one would visit the next county and so on. </p>	
+
+  </article>
+
+  <article>
+	<header><h3>Results and Lessons Learned</h3></header>
+
+  <p> The resulting DQN network was able to optimally traverse the county level rather easily. The first gif shows how it evaluated the training county,
+  while the second gif shows how it evaluated for a different, test county: </p>
+
+  <figure>
+	  <img src="Atascosa_batch_pathing_animation.gif" width="250" height="250" alt="The evaluated path on the training environment (Atascosa).">
+	  <figcaption>Training environment evaluation (Atascosa).</figcaption>
+	</figure>
+
+  <figure>
+	  <img src="Frio_batch_pathing_animation.gif" width="250" height="250" alt="The evaluated path on the test environment (Frio).">
+	  <figcaption>Test environment evaluation (Frio).</figcaption>
+	</figure>
+
+  <p> It's worth noting that the evaluation of Frio was <strong>without any prior training on the Frio environment!</strong> </p>
+
+  <p> Below is the path the combined learners would take over the state of Texas: </p>
+
+  <figure>
+	  <img src="Texas_batch.gif" width="200" height="200" alt="The evaluation of the final task: the state of Texas itself.">
+	  <figcaption>Final evaluation over Texas.</figcaption>
+	</figure>
+
+  <p> There were many times in this project when I tried something new. This was the first time that I developed code to unzip data on the large scale,
+  the first time I worked with shapefiles and related libraries, one of the first times I worked with reinforcement learning,
+  my first time working with big data, and the first time I started working with modules. </p>
+
+  </article>
+  
+  <article>
+    <header><h3>Recommendations</h3></header>
+
+    <p> The current result is only able to identify the path that minimizes distance traveled, and by extension minimizes the time it takes to plug all the wells (roughly).
+    The current model is unable to account for other financial costs like the varying plug rates across each district,
+    nor is it able to minimize the environmental risk these open wells pose, mainly those that are radioactive or close to water. </p>
+
+    <p> Each district of Texas has a plug rate, which denotes the cost of plugging up a well with a certain depth. These plug rates differ from county to county and year to year.
+    While most plug rates are roughly the same price, there are times when one district sets an unnusually high plug rate.
+    By developing a learner that can account for these deviations, you are bound to save more money doing so. </p>
+
+    <p> If the environmental risk of leaving the wells open is more important than the money you can save,
+    then it would be useful to modify the environment and learner such that the longer these high-risk wells remain unplugged, the higher the cost. </p>
+
+    <p> There are several ways we can build upon this project in order to address certain conditions. However you wish to add to it, I leave the pieces to you. </p>
+
+  </article>
+
+  <article>
+    <header><h3>Acknowledgements markup</h3></header>
+	<p> Thanks to:</p>
+	<ul>
+	  <li> Texas Advanced Computing Center </li>
+	  <li> Freshman Research Initiative </li>
+	  <li> ConocoPhillips </li>
+	  <li> FRI Summer Fellowships 2021 Team </li>
+	</ul>
+  </article>
+  
+
+  <figure style="flex-grow: 9999999">
+    <img style="width: 70%" src="EA_logo.jpg" alt="Project logo" />
+    <figcaption>Freshman Research Initiative Energy Analytics</figcaption>
+  </figure>
+    </main>
+
+    <footer>
+      <address class="monospace">  <a href="https://github.com/FRI-Energy-Analytics/2021_summer_fellows">https://github.com/FRI-Energy-Analytics/2021_summer_fellows</a>
+</address>
+      <address class="monospace">  jbreedis@utexas.edu
+</address>
+                    <span class="credits">
+          Based on an <a href="https://github.com/cpitclaudel/academic-poster-template">open poster template</a>.
+        </span>
+          </footer>
+  </body>
+</html>
