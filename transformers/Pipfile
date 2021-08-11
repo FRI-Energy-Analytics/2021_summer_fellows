@@ -12,14 +12,16 @@ geopandas = "*"
 seaborn = "*"
 lxml = "*"
 tqdm = "*"
-torchtext = "*"
+# torchtext = "*"
 sklearn = "*"
-transformers = "*"
 # multimodal-transformers = "*"
 toml = "*"
 lasio = "*"
 welly = "*"
 wellpathpy = "*"
+stumpy = "*"
+tensorflow = "*"
+# tensorflow-gpu = "*"
 
 [dev-packages]
 

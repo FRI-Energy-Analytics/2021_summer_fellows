@@ -12,11 +12,10 @@ class Config:
     dataset
     and model hyperparmeters
     """
-
     @classmethod
     def load_toml(cls, file_name):
         """
-        Import the configuration using a toml file at the specified location
+        Import the confiuation using a toml file at the specified location
         Example configuration:
         ```toml
             [model]
@@ -51,7 +50,7 @@ class Config:
     @classmethod
     def load_json(cls, file_name):
         """
-        Import the configuration using a toml file at the specified location
+        Import the confiuation using a toml file at the specified location
         Example configuration:
         ```json
         {
@@ -87,6 +86,7 @@ class Config:
         self.train = TrainConfig(**opts["train"])
         self.model = ModelConfig(**opts["model"])
         self.data = DataConfig(**opts["data"])
+        self.raw_data = opts
 
     def __getattr__(self, name: str):
         """
@@ -106,7 +106,6 @@ class GeneralConfig:
     It is still best practice to put the name of each along with
     a default value
     """
-
     def __init__(self, **opts):
         for name, option in opts.items():
             setattr(self, name, option)
@@ -120,6 +119,7 @@ class DataConfig(GeneralConfig):
     """
 
     year: int
+    train_split: float
 
 
 class TrainConfig(GeneralConfig):

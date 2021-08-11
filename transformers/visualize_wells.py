@@ -5,10 +5,11 @@ TODO describe module
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from scripts.csv_extractor import get_gamma,get_depth
+from scripts.csv_extractor import get_gamma, get_depth
 
 # Unused
 ##import pandas as pd
+
 
 def plot_well(file_name):
     """ Plot wells

@@ -28,9 +28,7 @@ def get_batch(source, i, cnf):
     """
     seq_len = min(cnf.batch_size, len(source) - cnf.forecast_window - i)
     data = source[i : i + seq_len]
-    target = source[
-        i + cnf.forecast_window : i + cnf.forecast_window + seq_len
-    ].reshape(-1)
+    target = source[i + cnf.forecast_window : i + cnf.forecast_window + seq_len].reshape(-1)
     return data, target
 
 
@@ -52,7 +50,9 @@ def data_process(raw_text_iter, tokenizer, vocab):
     Converts the data into a latent dimension using the given vocab
     """
     data = [
-        torch.tensor([vocab[token] for token in tokenizer(str(item))], dtype=torch.long)
+        torch.tensor(
+            [vocab[token] for token in tokenizer(str(item))], dtype=torch.long
+        )
         for item in raw_text_iter
     ]
     return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
@@ -65,14 +65,13 @@ def conv(raw_output, vocab):
     return torch.tensor([int(vocab.get_itos()[x]) for x in raw_output.view(-1)])
 
 
-def convert_output_to_tensor(output, vocab):
+def convert_outpupt_to_tensor(output, vocab):
     """
     Converts the latent dimension into data again the opposite of data_process
     This version also accounts for the probability outputs using torch.argmax()
     """
     imm = [
-        [vocab.get_itos()[torch.argmax(prob).item()] for prob in result]
-        for result in output
+        [vocab.get_itos()[torch.argmax(prob).item()] for prob in result] for result in output
     ]
     ret = []
     for row in imm:
@@ -124,7 +123,10 @@ def train(model, optimizer, criterion, ntokens, train_data, cnf):
             print(
                 "{:5d}/{:5d} batches | "
                 "loss {:5.2f} | ppl {:8.2f}".format(
-                    batch, elapsed * 1000 / log_interval, cur_loss, math.exp(cur_loss)
+                    batch,
+                    elapsed * 1000 / log_interval,
+                    cur_loss,
+                    math.exp(cur_loss),
                 )
             )
             total_loss = 0
@@ -142,7 +144,9 @@ def evaluate(eval_model, criterion, ntokens, data_source, cnf):
         for i in range(0, data_source.size(0) - 1, cnf.input_length):
             data, targets = get_batch(data_source, i, cnf)
             if data.size(0) != cnf.input_length:
-                src_mask = generate_square_subsequent_mask(data.size(0)).to(cnf.device)
+                src_mask = generate_square_subsequent_mask(data.size(0)).to(
+                    cnf.device
+                )
             output = eval_model(data, src_mask)
             output_flat = output.view(-1, ntokens)
             total_loss += len(data) * criterion(output_flat, targets).item()
