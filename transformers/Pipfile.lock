@@ -384,7 +384,7 @@
                 "sha256:7d19006380f6217458a9db309b54e3dab87ced6c06329c61823907bef2a6f51b"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.9.0"
+            "version": ">=1.15.4"
         },
         "jupyterlab": {
             "hashes": [
@@ -667,7 +667,7 @@
                 "sha256:f7f0a71a999c7967d9418272ae4c3378a220bd28330fbfb49860e46cf8a5838a"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==6.4.1"
+            "version": ">=6.4.10"
         },
         "numba": {
             "hashes": [
@@ -835,7 +835,7 @@
                 "sha256:ff04c373477723430dce2e9d024c708a047d44cf17166bf16e604b379bf0ca14"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==9.0.0"
+            "version": "==9.0.1"
         },
         "prometheus-client": {
             "hashes": [
