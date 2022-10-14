@@ -532,7 +532,7 @@
                 "sha256:f90ba11136bfdd25cae3951af8da2e95121c9b9b93727b1b896e3fa105b2f586"
             ],
             "index": "pypi",
-            "version": "==4.6.5"
+            "version": "==4.9.1"
         },
         "markupsafe": {
             "hashes": [
@@ -643,7 +643,7 @@
                 "sha256:d22a8ff202644d31db254d24d52c3a96c82156623fcd7c7f987bba2612303ec9"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==6.1.0"
+            "version": "==6.5.1"
         },
         "nbformat": {
             "hashes": [
@@ -728,7 +728,7 @@
                 "sha256:fd0a359c1c17f00cb37de2969984a74320970e0ceef4808c32e00773b06649d9"
             ],
             "index": "pypi",
-            "version": "==1.21.0"
+            "version": "==1.22.0"
         },
         "packaging": {
             "hashes": [
