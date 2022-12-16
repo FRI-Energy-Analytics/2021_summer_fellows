@@ -95,7 +95,7 @@
                 "sha256:2bbf76fd432960138b3ef6dda3dde0544f27cbf8546c458e60baf371917ba9ee",
                 "sha256:50b1e4f8446b06f41be7dd6338db18e0990601dce795c2b1686458aa7e8fa7d8"
             ],
-            "version": "==2021.5.30"
+            "version": ">=2022.12.07"
         },
         "cffi": {
             "hashes": [
@@ -376,7 +376,7 @@
                 "sha256:8c6c0cac5c1b563622ad49321d5ec47017bd18b94facb381c6973a0486395f8e"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==4.7.1"
+            "version": ">=4.11.2"
         },
         "jupyter-server": {
             "hashes": [
@@ -835,7 +835,7 @@
                 "sha256:ff04c373477723430dce2e9d024c708a047d44cf17166bf16e604b379bf0ca14"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==9.0.1"
+            "version": ">=9.2.0"
         },
         "prometheus-client": {
             "hashes": [
